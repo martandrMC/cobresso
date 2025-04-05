@@ -1,0 +1,22 @@
+{
+	"version": "0.2.0",
+	"inputs": [
+		{
+			"id": "pick_file",
+			"type": "promptString",
+			"description": "Pick a file to compress...",
+			"default": "test/input.txt"
+		}
+	],
+	"configurations": [
+		{
+			"type": "cppdbg",
+			"request": "launch",
+			"name": "Launch",
+			"preLaunchTask": "Fresh Build (Debug)",
+			"program": "${workspaceRoot}/build/cobresso",
+			"cwd": "${workspaceRoot}/",
+			"args": [ "${input:pick_file}" ]
+		}
+	]
+}
