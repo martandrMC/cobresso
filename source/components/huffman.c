@@ -1,5 +1,6 @@
 #include "huffman.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 huffman_tree_t huffman_tree_new(uint16_t symbol_count) {
@@ -33,6 +34,7 @@ void huffman_tree_build(huffman_tree_t tree, const uint32_t *symbol_freqs) {
 			else if(tree->nodes[i].count < tree->nodes[min2].count) min2 = i;
 		}
 		if(min2 == tree->node_count - 1) {
+			if(next_free == tree->symbol_count) break;
 			tree->root_node = next_free - 1;
 			break;
 		}
@@ -65,6 +67,7 @@ static void tree_walker(
 	}
 
 	code_so_far.count++, code_so_far.bits <<= 1;
+	assert(code_so_far.count <= 16);
 	tree_walker(tree, tree->nodes[my_root].child0, table, code_so_far);
 	code_so_far.bits |= 1;
 	tree_walker(tree, tree->nodes[my_root].child1, table, code_so_far);
@@ -73,6 +76,7 @@ static void tree_walker(
 void huffman_table_build(huffman_table_t table, huffman_tree_t tree) {
 	if(table == NULL || tree == NULL) return;
 	if(table->symbol_count != tree->symbol_count) return;
+	if(tree->root_node == UINT16_MAX) return;
 	tree_walker(tree, tree->root_node, table, (huffman_code_t){0});
 }
 

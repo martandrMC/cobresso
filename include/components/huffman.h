@@ -1,5 +1,5 @@
-#ifndef HUFFMAN_H
-#define HUFFMAN_H
+#ifndef COMPONENTS_HUFFMAN_H
+#define COMPONENTS_HUFFMAN_H
 
 #include <stdint.h>
 
@@ -38,4 +38,4 @@ huffman_table_t huffman_table_new(uint16_t symbol_count);
 void huffman_table_build(huffman_table_t table, huffman_tree_t tree);
 void huffman_table_del(huffman_table_t table);
 
-#endif //HUFFMAN_H
+#endif // COMPONENTS_HUFFMAN_H

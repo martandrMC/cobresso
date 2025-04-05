@@ -16,7 +16,7 @@
 			"preLaunchTask": "Fresh Build (Debug)",
 			"program": "${workspaceRoot}/build/cobresso",
 			"cwd": "${workspaceRoot}/",
-			"args": [ "${input:pick_file}" ]
+			"args": []
 		}
 	]
 }
