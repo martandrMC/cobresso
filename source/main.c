@@ -4,46 +4,80 @@
 
 #include "methods/plain_huffman.h"
 
-void print_help(char *exe_name) {
-	fprintf(stderr, "Usage: %s [encode|decode] <input> <output>\n", exe_name);
+static void print_help(char *exe_name) {
+	fprintf(stderr,
+		"Usage: %s [encode|decode] <method> <input> <output>\n"
+		"For input/output, specify `-` for stdin/stout, otherwise path to file.\n"
+		"Methods available:\n"
+		"	`huff`: Plain Huffman coding; frequency table + encoded content.\n"
+	, exe_name);
 	exit(EXIT_FAILURE);
 }
 
+enum method { MT_ERROR, MT_HUFF };
+
+static void select_encoder(
+	enum method method,
+	const char *input_path,
+	const char *output_path
+) {
+	FILE *input = NULL;
+	if(strcmp(input_path, "-") == 0) input = stdin;
+	else input = fopen(input_path, "rb");
+	if(input == NULL) perror("Input"), exit(EXIT_FAILURE);
+
+	bitfile_t output = {0};
+	output_path = (strcmp(output_path, "-") == 0) ? NULL : output_path;
+	output = bitfile_open_write(output_path);
+	if(output.file == NULL) perror("Output"), exit(EXIT_FAILURE);
+
+	switch(method) {
+		case MT_HUFF: plain_huffman_encode(input, &output); break;
+		default:;
+	}
+
+	bitfile_close(&output);
+	if(input != stdin) fclose(input);
+}
+
+static void select_decoder(
+	enum method method,
+	const char *input_path,
+	const char *output_path
+) {
+	bitfile_t input = {0};
+	input_path = (strcmp(input_path, "-") == 0) ? NULL : input_path;
+	input = bitfile_open_read(input_path);
+	if(input.file == NULL) perror("Input"), exit(EXIT_FAILURE);
+
+	FILE *output = NULL;
+	if(strcmp(output_path, "-") == 0) output = stdout;
+	else output = fopen(output_path, "wb");
+	if(output == NULL) perror("Ouput"), exit(EXIT_FAILURE);
+
+	switch(method) {
+		case MT_HUFF: plain_huffman_decode(&input, output); break;
+		default:;
+	}
+
+	if(output != stdout) fclose(output);
+	bitfile_close(&input);
+}
+
 int main(int argc, char **argv) {
-	if(argc != 4) print_help(argv[0]);
-	enum { ERROR, ENCODE, DECODE } operation = ERROR;
-	if(strcmp(argv[1], "encode") == 0) operation = ENCODE;
-	else if(strcmp(argv[1], "decode") == 0) operation = DECODE;
+	if(argc != 5) print_help(argv[0]);
 
-	if(operation == ENCODE) {
-		FILE *input = NULL;
-		if(strcmp(argv[2], "-") == 0) input = stdin;
-		else input = fopen(argv[2], "rb");
-		if(input == NULL) perror("Input"), exit(EXIT_FAILURE);
+	enum { OP_ERROR, OP_ENCODE, OP_DECODE } operation = OP_ERROR;
+	if(strcmp(argv[1], "encode") == 0) operation = OP_ENCODE;
+	else if(strcmp(argv[1], "decode") == 0) operation = OP_DECODE;
+	if(operation == OP_ERROR) print_help(argv[0]);
 
-		bitfile_t output = {0};
-		output = bitfile_open_write((strcmp(argv[3], "-") == 0) ? NULL : argv[3]);
-		if(output.file == NULL) perror("Output"), exit(EXIT_FAILURE);
+	enum method method = MT_ERROR;
+	if(strcmp(argv[2], "huff") == 0) method = MT_HUFF;
+	if(method == MT_ERROR) print_help(argv[0]);
 
-		plain_huffman_encode(input, &output);
-
-		bitfile_close(&output);
-		if(input != stdin) fclose(input);
-	} else if(operation == DECODE) {
-		bitfile_t input = {0};
-		input = bitfile_open_read((strcmp(argv[2], "-") == 0) ? NULL : argv[2]);
-		if(input.file == NULL) perror("Input"), exit(EXIT_FAILURE);
-
-		FILE *output = NULL;
-		if(strcmp(argv[3], "-") == 0) output = stdout;
-		else output = fopen(argv[3], "wb");
-		if(output == NULL) perror("Ouput"), exit(EXIT_FAILURE);
-
-		plain_huffman_decode(&input, output);
-
-		bitfile_close(&input);
-		if(output != stdout) fclose(output);
-	} else print_help(argv[0]);
+	if(operation == OP_ENCODE) select_encoder(method, argv[3], argv[4]);
+	else if(operation == OP_DECODE) select_decoder(method, argv[3], argv[4]);
 
 	exit(EXIT_SUCCESS);
 }
