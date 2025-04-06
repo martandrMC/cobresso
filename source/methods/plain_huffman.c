@@ -8,11 +8,6 @@ void plain_huffman_encode(FILE *input, bitfile_t *output) {
 		if(fread(&c, 1, 1, input) == 0) break;
 	fseek(input, 0, SEEK_SET);
 
-	huffman_tree_t tree = huffman_tree_new(256);
-	huffman_table_t table = huffman_table_new(256);
-	huffman_tree_build(tree, counts);
-	huffman_table_build(table, tree);
-
 	uint16_t last_symb = 0;
 	for(uint16_t i = 0; i < 256; i++) if(counts[i] != 0) last_symb = i + 1;
 	if(last_symb != 0) bitfile_write_num(output, last_symb - 1, 8, false);
@@ -28,6 +23,11 @@ void plain_huffman_encode(FILE *input, bitfile_t *output) {
 		if(bits == 1) continue;
 		bitfile_write_num(output, counts[i], bits, false);
 	}
+
+	huffman_tree_t tree = huffman_tree_new(256);
+	huffman_table_t table = huffman_table_new(256);
+	huffman_tree_build(tree, counts);
+	huffman_table_build(table, tree);
 
 	for(uint8_t c; ; ) {
 		if(fread(&c, 1, 1, input) == 0) break;
@@ -68,4 +68,7 @@ void plain_huffman_decode(bitfile_t *input, FILE *output) {
 		}
 		fwrite(&my_root, 1, 1, output);
 	}
+
+	huffman_tree_del(tree);
+	huffman_table_del(table);
 }

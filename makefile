@@ -28,7 +28,7 @@ C_OBJECTS	= $(C_SOURCES:$(C_SOURCE_DIR)%.c=$(C_BUILD_DIR)%.o)
 C_LIBRARIES	= $(addprefix -l, $(LIBS_EXISTING))
 
 ### User Rules ###
-.PHONY: debug release clean purge
+.PHONY: debug release test clean purge
 
 debug: C_FLAGS = $(C_FLAGS_DBG)
 debug: $(LIBS_TO_MAKE) $(PROGRAM_NAME)
@@ -52,5 +52,19 @@ $(C_OBJECTS): $(C_BUILD_DIR)%.o: $(C_SOURCE_DIR)%.c
 $(PROGRAM_NAME): $(C_OBJECTS)
 	@echo '-> $@'
 	@$(C_COMPILER) $(C_FLAGS_LNK) $^ $(C_LIBRARIES) -o $@
+
+# ---------------------------------------------------------------------------- #
+
+TESTS=phuff ahuff
+test: debug $(TESTS)
+
+$(TESTS):
+	@$(PROGRAM_NAME) encode $@ ./test/lorem.txt ./test/lorem1.bin
+	@$(PROGRAM_NAME) encode $@ ./test/lorem1.bin ./test/lorem2.bin
+	@$(PROGRAM_NAME) decode $@ ./test/lorem2.bin ./test/lorem1_out.bin
+	@$(PROGRAM_NAME) decode $@ ./test/lorem1_out.bin ./test/lorem_out.txt
+	-@diff ./test/lorem.txt ./test/lorem_out.txt > /dev/null
+	@$(shell [ $$? == '0' ] && echo 'echo -e \\x1b[32mPASS!\\x1b[0m')
+	@rm ./test/lorem*.bin ./test/lorem_out.txt
 
 # ---------------------------------------------------------------------------- #

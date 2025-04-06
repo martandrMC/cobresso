@@ -4,6 +4,7 @@
 
 #include "methods/plain_huffman.h"
 #include "methods/adaptive_huffman.h"
+#include "methods/plain_arithmetic.h"
 
 static void print_help(char *exe_name) {
 	fprintf(stderr,
@@ -12,11 +13,12 @@ static void print_help(char *exe_name) {
 		"Methods available:\n"
 		"	`phuff`: Plain Huffman coding; frequency table + encoded content.\n"
 		"	`ahuff`: Adaptive Huffman coding; Implicit frequency table.\n"
+		"	`parith`: Plain Arithmetic coding; frequency table + encoded content.\n"
 	, exe_name);
 	exit(EXIT_FAILURE);
 }
 
-enum method { MT_ERROR, MT_PHUFF, MT_AHUFF };
+enum method { MT_ERROR, MT_PHUFF, MT_AHUFF, MT_PARITH };
 
 static void select_encoder(
 	enum method method,
@@ -36,6 +38,7 @@ static void select_encoder(
 	switch(method) {
 		case MT_PHUFF: plain_huffman_encode(input, &output); break;
 		case MT_AHUFF: adaptive_huffman_encode(input, &output); break;
+		case MT_PARITH: plain_arithmetic_encode(input, &output); break;
 		default:;
 	}
 
@@ -61,6 +64,7 @@ static void select_decoder(
 	switch(method) {
 		case MT_PHUFF: plain_huffman_decode(&input, output); break;
 		case MT_AHUFF: adaptive_huffman_decode(&input, output); break;
+		case MT_PARITH: plain_arithmetic_decode(&input, output); break;
 		default:;
 	}
 
@@ -79,6 +83,7 @@ int main(int argc, char **argv) {
 	enum method method = MT_ERROR;
 	if(strcmp(argv[2], "phuff") == 0) method = MT_PHUFF;
 	else if(strcmp(argv[2], "ahuff") == 0) method = MT_AHUFF;
+	else if(strcmp(argv[2], "parith") == 0) method = MT_PARITH;
 	if(method == MT_ERROR) print_help(argv[0]);
 
 	if(operation == OP_ENCODE) select_encoder(method, argv[3], argv[4]);
