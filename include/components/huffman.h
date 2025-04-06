@@ -36,6 +36,7 @@ typedef struct huffman_table_object *huffman_table_t;
 
 huffman_table_t huffman_table_new(uint16_t symbol_count);
 void huffman_table_build(huffman_table_t table, huffman_tree_t tree);
+void huffman_table_print(huffman_table_t table);
 void huffman_table_del(huffman_table_t table);
 
 #endif // COMPONENTS_HUFFMAN_H

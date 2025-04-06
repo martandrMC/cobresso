@@ -1,6 +1,7 @@
 #include "huffman.h"
 
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 huffman_tree_t huffman_tree_new(uint16_t symbol_count) {
@@ -78,6 +79,17 @@ void huffman_table_build(huffman_table_t table, huffman_tree_t tree) {
 	if(table->symbol_count != tree->symbol_count) return;
 	if(tree->root_node == UINT16_MAX) return;
 	tree_walker(tree, tree->root_node, table, (huffman_code_t){0});
+}
+
+void huffman_table_print(huffman_table_t table) {
+	for(uint16_t i = 0; i < table->symbol_count; i++) {
+		if(table->codes[i].count == 0) continue;
+		printf("%02x ", i);
+		for(uint8_t j = table->codes[i].count; j > 0; j--)
+			putchar('0' + (table->codes[i].bits >> (j - 1) & 1));
+		putchar('\n');
+	}
+	putchar('\n');
 }
 
 void huffman_table_del(huffman_table_t table) {

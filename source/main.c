@@ -3,18 +3,20 @@
 #include <string.h>
 
 #include "methods/plain_huffman.h"
+#include "methods/adaptive_huffman.h"
 
 static void print_help(char *exe_name) {
 	fprintf(stderr,
 		"Usage: %s [encode|decode] <method> <input> <output>\n"
 		"For input/output, specify `-` for stdin/stout, otherwise path to file.\n"
 		"Methods available:\n"
-		"	`huff`: Plain Huffman coding; frequency table + encoded content.\n"
+		"	`phuff`: Plain Huffman coding; frequency table + encoded content.\n"
+		"	`ahuff`: Adaptive Huffman coding; Implicit frequency table.\n"
 	, exe_name);
 	exit(EXIT_FAILURE);
 }
 
-enum method { MT_ERROR, MT_HUFF };
+enum method { MT_ERROR, MT_PHUFF, MT_AHUFF };
 
 static void select_encoder(
 	enum method method,
@@ -32,7 +34,8 @@ static void select_encoder(
 	if(output.file == NULL) perror("Output"), exit(EXIT_FAILURE);
 
 	switch(method) {
-		case MT_HUFF: plain_huffman_encode(input, &output); break;
+		case MT_PHUFF: plain_huffman_encode(input, &output); break;
+		case MT_AHUFF: adaptive_huffman_encode(input, &output); break;
 		default:;
 	}
 
@@ -56,7 +59,8 @@ static void select_decoder(
 	if(output == NULL) perror("Ouput"), exit(EXIT_FAILURE);
 
 	switch(method) {
-		case MT_HUFF: plain_huffman_decode(&input, output); break;
+		case MT_PHUFF: plain_huffman_decode(&input, output); break;
+		case MT_AHUFF: adaptive_huffman_decode(&input, output); break;
 		default:;
 	}
 
@@ -73,7 +77,8 @@ int main(int argc, char **argv) {
 	if(operation == OP_ERROR) print_help(argv[0]);
 
 	enum method method = MT_ERROR;
-	if(strcmp(argv[2], "huff") == 0) method = MT_HUFF;
+	if(strcmp(argv[2], "phuff") == 0) method = MT_PHUFF;
+	else if(strcmp(argv[2], "ahuff") == 0) method = MT_AHUFF;
 	if(method == MT_ERROR) print_help(argv[0]);
 
 	if(operation == OP_ENCODE) select_encoder(method, argv[3], argv[4]);
