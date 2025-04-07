@@ -8,7 +8,7 @@ C_SOURCE_DIR	= source
 C_INCLUDE_DIR	= include
 
 PROGRAM_NAME	= $(BUILD_DIR)/cobresso
-C_BUILD_DIR		= $(BUILD_DIR)
+C_BUILD_DIR		= $(BUILD_DIR)/proj
 
 ### Compiler Configuration ###
 LIBS_EXISTING =
@@ -55,7 +55,7 @@ $(PROGRAM_NAME): $(C_OBJECTS)
 
 # ---------------------------------------------------------------------------- #
 
-TESTS=phuff ahuff
+TESTS=phuff ahuff lzss
 test: debug $(TESTS)
 
 $(TESTS):
@@ -64,7 +64,9 @@ $(TESTS):
 	@$(PROGRAM_NAME) decode $@ ./test/lorem2.bin ./test/lorem1_out.bin
 	@$(PROGRAM_NAME) decode $@ ./test/lorem1_out.bin ./test/lorem_out.txt
 	-@diff ./test/lorem.txt ./test/lorem_out.txt > /dev/null
-	@$(shell [ $$? == '0' ] && echo 'echo -e \\x1b[32mPASS!\\x1b[0m')
+	@$(shell [ $$? == '0' ] && \
+		echo 'echo -e \\x1b[32mPass: $@!\\x1b[0m' || \
+		echo 'echo -e \\x1b[31mFail: $@!\\x1b[0m')
 	@rm ./test/lorem*.bin ./test/lorem_out.txt
 
 # ---------------------------------------------------------------------------- #

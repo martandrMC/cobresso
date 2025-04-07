@@ -5,6 +5,7 @@
 #include "methods/plain_huffman.h"
 #include "methods/adaptive_huffman.h"
 #include "methods/plain_arithmetic.h"
+#include "methods/lempelziv_ss.h"
 
 static void print_help(char *exe_name) {
 	fprintf(stderr,
@@ -12,13 +13,14 @@ static void print_help(char *exe_name) {
 		"For input/output, specify `-` for stdin/stout, otherwise path to file.\n"
 		"Methods available:\n"
 		"	`phuff`: Plain Huffman coding; frequency table + encoded content.\n"
-		"	`ahuff`: Adaptive Huffman coding; Implicit frequency table.\n"
+		"	`ahuff`: Adaptive Huffman coding; Implicit frequency table. SLOW!!!\n"
 		"	`parith`: Plain Arithmetic coding; frequency table + encoded content.\n"
+		"	`lzss`: Lempel-Ziv-Storer-Szymanski coding; Backreferences on sliding window.\n"
 	, exe_name);
 	exit(EXIT_FAILURE);
 }
 
-enum method { MT_ERROR, MT_PHUFF, MT_AHUFF, MT_PARITH };
+enum method { MT_ERROR, MT_PHUFF, MT_AHUFF, MT_PARITH, MT_LZSS };
 
 static void select_encoder(
 	enum method method,
@@ -39,6 +41,7 @@ static void select_encoder(
 		case MT_PHUFF: plain_huffman_encode(input, &output); break;
 		case MT_AHUFF: adaptive_huffman_encode(input, &output); break;
 		case MT_PARITH: plain_arithmetic_encode(input, &output); break;
+		case MT_LZSS: lempelziv_ss_encode(input, &output); break;
 		default:;
 	}
 
@@ -65,6 +68,7 @@ static void select_decoder(
 		case MT_PHUFF: plain_huffman_decode(&input, output); break;
 		case MT_AHUFF: adaptive_huffman_decode(&input, output); break;
 		case MT_PARITH: plain_arithmetic_decode(&input, output); break;
+		case MT_LZSS: lempelziv_ss_decode(&input, output); break;
 		default:;
 	}
 
@@ -84,6 +88,7 @@ int main(int argc, char **argv) {
 	if(strcmp(argv[2], "phuff") == 0) method = MT_PHUFF;
 	else if(strcmp(argv[2], "ahuff") == 0) method = MT_AHUFF;
 	else if(strcmp(argv[2], "parith") == 0) method = MT_PARITH;
+	else if(strcmp(argv[2], "lzss") == 0) method = MT_LZSS;
 	if(method == MT_ERROR) print_help(argv[0]);
 
 	if(operation == OP_ENCODE) select_encoder(method, argv[3], argv[4]);

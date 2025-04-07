@@ -5,6 +5,8 @@
 #define SYM_EOF 256
 #define SYM_ESC 257
 
+// TODO: Rewrite this... Rebuilding the tree for each symbol is hella slow.
+
 void adaptive_huffman_encode(FILE *input, bitfile_t *output) {
 	uint32_t counts[258] = {0};
 	counts[SYM_EOF] = counts[SYM_ESC] = 1;
